@@ -1,204 +1,138 @@
 package com.nexus.ui.home
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nexus.viewmodel.MainViewModel
-import com.nexus.viewmodel.TransactionUi
-import java.text.DecimalFormat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nexus.ui.theme.*
 
 @Composable
 fun HomeScreen(
-    viewModel: MainViewModel,
-    onNavigateToHistory: () -> Unit,
-    onNavigateToStats: () -> Unit,
+    viewModel: HomeViewModel = viewModel(),
     onNavigateToAdd: () -> Unit
 ) {
-    val balance by viewModel.balance.collectAsState()
-    val income by viewModel.income.collectAsState()
-    val expense by viewModel.expense.collectAsState()
-    val predictions by viewModel.predictions.collectAsState()
-    val autoSave by viewModel.autoSave.collectAsState()
-    val recentTransactions by viewModel.recentTransactions.collectAsState()
+    // La interfaz observa reactivamente los cambios en el estado
+    val estado by viewModel.estado.collectAsState()
 
-    val currencyFormat = DecimalFormat("€#,##0.00")
-    var selectedItem by remember { mutableIntStateOf(0) }
+    if (estado.estaCargando) {
+        Box(modifier = Modifier.fillMaxSize().background(BackgroundDark), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = NexusPurple)
+        }
+        return
+    }
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNavigateToAdd,
-                containerColor = MaterialTheme.colorScheme.primary
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundDark)
+            .padding(horizontal = 24.dp, vertical = 32.dp)
+    ) {
+        // Encabezado
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("+", fontSize = 24.sp)
+                Text(text = "Nexus Wallet", fontSize = 24.sp, fontWeight = FontWeight.Black, color = TextPrimary)
+
+                // Botón de Inserción Manual Superior
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(PrimaryGradient)
+                        .clickable { onNavigateToAdd() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Agregar Transacción Manual",
+                        tint = Color.Black
+                    )
+                }
             }
-        },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedItem == 0,
-                    onClick = {
-                        selectedItem = 0
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Home,
-                            contentDescription = "Home"
-                        )
-                    },
-                    label = { Text("Home") }
-                )
-                NavigationBarItem(
-                    selected = selectedItem == 1,
-                    onClick = {
-                        selectedItem = 1
-                        onNavigateToHistory()
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.History,
-                            contentDescription = "Historial"
-                        )
-                    },
-                    label = { Text("Historial") }
-                )
-                NavigationBarItem(
-                    selected = selectedItem == 2,
-                    onClick = {
-                        selectedItem = 2
-                        onNavigateToStats()
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.BarChart,
-                            contentDescription = "Estadísticas"
-                        )
-                    },
-                    label = { Text("AI Stats") }
-                )
-            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Nexus Wallet", style = MaterialTheme.typography.titleLarge)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Balance Optimizado", style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            text = currencyFormat.format(balance),
-                            style = MaterialTheme.typography.displayMedium
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Ingresos", style = MaterialTheme.typography.bodySmall)
-                                Text(currencyFormat.format(income), color = Color(0xFF4CAF50))
-                            }
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Gastos", style = MaterialTheme.typography.bodySmall)
-                                Text(currencyFormat.format(expense), color = Color(0xFFEF5350))
-                            }
-                        }
-                    }
-                }
-            }
 
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    InfoChip("Predicción", currencyFormat.format(predictions))
-                    InfoChip("Auto-Ahorro", currencyFormat.format(autoSave))
-                    InfoChip("Meta Pro", "€1,500")
-                }
-            }
+        // Tarjeta Principal de Balance
+        item {
+            TarjetaBalanceGlobal(estado)
+            Spacer(modifier = Modifier.height(32.dp))
+        }
 
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Actividad Reciente", style = MaterialTheme.typography.titleMedium)
-                    TextButton(onClick = { onNavigateToHistory() }) {
-                        Text("Ver todas")
-                    }
-                }
-            }
+        // Lista de Transacciones (Actividad Reciente)
+        item {
+            Text(text = "Actividad Reciente", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
-            items(recentTransactions) { transaction ->
-                TransactionItem(transaction, currencyFormat)
-            }
+        items(estado.transaccionesRecientes) { transaccion ->
+            FilaTransaccion(transaccion)
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
 
 @Composable
-fun InfoChip(title: String, value: String) {
-    Card(
-        modifier = Modifier.width(110.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+private fun TarjetaBalanceGlobal(estado: HomeState) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(SurfaceDark)
+            .border(1.dp, SurfaceBorder, RoundedCornerShape(24.dp))
+            .padding(24.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(title, style = MaterialTheme.typography.labelSmall)
-            Text(value, style = MaterialTheme.typography.titleSmall)
-        }
-    }
-}
-
-@Composable
-fun TransactionItem(transaction: TransactionUi, currencyFormat: DecimalFormat) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(1.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(transaction.title, style = MaterialTheme.typography.bodyLarge)
-                Text(transaction.category, style = MaterialTheme.typography.bodySmall)
-                Text(transaction.dateFormatted, style = MaterialTheme.typography.labelSmall)
-            }
+        Column {
+            Text(text = "Balance Optimizado", color = TextSecondary, fontSize = 14.sp)
             Text(
-                text = currencyFormat.format(transaction.amount),
-                color = if (transaction.amount > 0) Color(0xFF4CAF50) else Color(0xFFEF5350)
+                text = "€${estado.balanceTotal}",
+                color = TextPrimary,
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Black
             )
+            // Aquí se anidarían las sub-tarjetas de Ingresos y Gastos
+        }
+    }
+}
+
+@Composable
+private fun FilaTransaccion(tx: Transaccion) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(SurfaceDark)
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(text = tx.concepto, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(text = tx.categoria, color = TextSecondary, fontSize = 12.sp)
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            val colorMonto = if (tx.esIngreso) NexusGreen else TextPrimary
+            val signo = if (tx.esIngreso) "+" else "-"
+            Text(text = "$signo€${tx.monto}", color = colorMonto, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(text = tx.fechaStr, color = TextSecondary, fontSize = 12.sp)
         }
     }
 }
