@@ -1,19 +1,32 @@
 package com.nexus.ui.stats
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.nexus.ui.theme.*
 import com.nexus.viewmodel.MainViewModel
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+import androidx.compose.ui.text.TextStyle
+
 @Composable
 fun StatsScreen(
     viewModel: MainViewModel,
@@ -24,80 +37,210 @@ fun StatsScreen(
     val categoryStats by viewModel.categoryStats.collectAsState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Estadísticas Generales") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
-                    }
-                }
-            )
-        }
+        containerColor = BackgroundDark
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)
         ) {
             item {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        StatBox("Flujo Entrante", "€${String.format(Locale.getDefault(), "%,.2f", income)}", "+12%", Color(0xFF4CAF50))
-                        StatBox("Flujo Saliente", "€${String.format(Locale.getDefault(), "%,.2f", expense)}", "-8%", Color(0xFFEF5350))
-                    }
+                Text(
+                    text = "Estadísticas Generales",
+                    style = TextStyle(
+                        brush = PrimaryGradient,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    StatCard(
+                        modifier = Modifier.weight(1f),
+                        title = "Flujo Entrante",
+                        value = "€${String.format(Locale.getDefault(), "%,.2f", income)}",
+                        change = "+12%",
+                        icon = Icons.AutoMirrored.Filled.TrendingUp,
+                        accentColor = NexusGreen
+                    )
+                    StatCard(
+                        modifier = Modifier.weight(1f),
+                        title = "Flujo Saliente",
+                        value = "€${String.format(Locale.getDefault(), "%,.2f", expense)}",
+                        change = "-8%",
+                        icon = Icons.AutoMirrored.Filled.TrendingDown,
+                        accentColor = NexusPurple
+                    )
                 }
             }
 
             item {
+                DistributionCard(categoryStats)
+            }
+        }
+    }
+}
+
+@Composable
+fun StatCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    change: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    accentColor: Color
+) {
+    Surface(
+        modifier = modifier.height(120.dp),
+        shape = RoundedCornerShape(24.dp),
+        color = SurfaceDark,
+        border = BorderStroke(1.dp, SurfaceBorder)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(title, color = TextSecondary, fontSize = 14.sp)
+            Text(value, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(change, color = accentColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            }
+        }
+    }
+}
+
+@Composable
+fun DistributionCard(stats: List<com.nexus.data.models.CategoryStats>) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(32.dp),
+        color = SurfaceDark,
+        border = BorderStroke(1.dp, SurfaceBorder)
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    "Distribución por Categoría",
-                    style = MaterialTheme.typography.titleLarge
+                    "Distribución Holográfica",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
-            items(categoryStats) { stat ->
-                CategoryRow(stat.name, stat.percentage, stat.amount)
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Donut Chart
+            val chartColors = listOf(
+                NexusPurple,
+                NexusGreen,
+                Color(0xFF3498DB), // Azul
+                Color(0xFFE74C3C), // Rojo
+                Color(0xFFF1C40F), // Amarillo
+                Color(0xFF9B59B6)  // Lavanda
+            )
+
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(200.dp)
+            ) {
+                Canvas(modifier = Modifier.size(180.dp)) {
+                    var startAngle = -90f
+                    stats.forEachIndexed { index, stat ->
+                        val sweepAngle = (stat.percentage.toFloat() / 100f) * 360f
+                        drawArc(
+                            color = chartColors[index % chartColors.size],
+                            startAngle = startAngle,
+                            sweepAngle = sweepAngle - 4f, // Gap entre segmentos
+                            useCenter = false,
+                            style = Stroke(width = 30.dp.toPx(), cap = StrokeCap.Round)
+                        )
+                        startAngle += sweepAngle
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Legend
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                val chunkedStats = stats.chunked(2)
+                chunkedStats.forEach { pair ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        pair.forEachIndexed { index, stat ->
+                            LegendItem(
+                                modifier = Modifier.weight(1f),
+                                name = stat.name,
+                                percentage = "${stat.percentage}%",
+                                color = chartColors[if (pair.size == 1) stats.size - 1 else (stats.indexOf(stat)) % chartColors.size]
+                            )
+                        }
+                        if (pair.size == 1) Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun StatBox(title: String, value: String, change: String, color: Color) {
-    Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-        Text(title, style = MaterialTheme.typography.bodyMedium)
-        Text(value, style = MaterialTheme.typography.titleLarge)
-        Text(change, style = MaterialTheme.typography.labelSmall, color = color)
-    }
-}
-
-@Composable
-fun CategoryRow(name: String, percentage: Int, amount: Double) {
-    Column {
+fun LegendItem(modifier: Modifier = Modifier, name: String, percentage: String, color: Color) {
+    Surface(
+        modifier = modifier.height(44.dp),
+        shape = RoundedCornerShape(22.dp),
+        color = Color.Black.copy(alpha = 0.3f),
+        border = BorderStroke(1.dp, SurfaceBorder)
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("$name $percentage%")
-            Text("€${String.format(Locale.getDefault(), "%,.2f", amount)}")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = name,
+                    color = TextSecondary,
+                    fontSize = 12.sp,
+                    maxLines = 1
+                )
+            }
+            Text(
+                text = percentage,
+                color = Color.White,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        LinearProgressIndicator(
-            progress = { percentage / 100f },
-            modifier = Modifier.fillMaxWidth(),
-            color = Color(0xFF6200EE)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
     }
 }

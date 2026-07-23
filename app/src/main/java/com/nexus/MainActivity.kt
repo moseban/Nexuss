@@ -1,4 +1,3 @@
-// app/src/main/java/com/nexus/viewmodel/MainViewModel.kt
 package com.nexus
 
 import android.os.Bundle
@@ -18,11 +17,14 @@ import com.nexus.ui.navigation.NexusBottomBar
 import com.nexus.ui.navigation.Screen
 import com.nexus.ui.theme.AppNexusTheme
 import com.nexus.ui.theme.BackgroundDark
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nexus.ui.home.HomeViewModel
 import com.nexus.ui.add.AddTransactionScreen
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.nexus.ui.history.HistoryScreen
+import com.nexus.ui.stats.StatsScreen
+import com.nexus.ui.profile.ProfileScreen
+import com.nexus.viewmodel.MainViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -40,6 +42,7 @@ class MainActivity : ComponentActivity() {
 fun NexusAppShell() {
     val navController = rememberNavController()
     val sharedHomeViewModel: HomeViewModel = hiltViewModel()
+    val mainViewModel: MainViewModel = hiltViewModel()
 
     Scaffold(
         bottomBar = { NexusBottomBar(navController = navController) },
@@ -61,17 +64,31 @@ fun NexusAppShell() {
                     AddTransactionScreen(
                         onSave = { concepto, categoria, monto, esIngreso ->
                             sharedHomeViewModel.agregarTransaccion(concepto, categoria, monto, esIngreso)
-                            navController.popBackStack() // Retorna al Home tras inyectar el dato
+                            navController.popBackStack()
                         },
                         onCancel = {
-                            navController.popBackStack() // Retorna al Home si se cancela
+                            navController.popBackStack()
                         }
                     )
                 }
-                // Implementación temporal de vistas vacías     para mantener la integridad de compilación
-                composable(Screen.Historial.route) { /* HistorialScreen() */ }
-                composable(Screen.Stats.route) { /* StatsScreen() */ }
-                composable(Screen.Perfil.route) { /* PerfilScreen() */ }
+                
+                composable(Screen.Historial.route) {
+                    HistoryScreen(
+                        viewModel = mainViewModel,
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Screen.Stats.route) {
+                    StatsScreen(
+                        viewModel = mainViewModel,
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Screen.Perfil.route) {
+                    ProfileScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
             }
         }
     }
