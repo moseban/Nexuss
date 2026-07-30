@@ -30,7 +30,7 @@ import com.nexus.ui.theme.*
 
 @Composable
 fun ProfileScreen(
-    onNavigateBack: () -> Unit
+    onLogout: () -> Unit
 ) {
     Scaffold(
         containerColor = BackgroundDark
@@ -122,7 +122,7 @@ fun ProfileScreen(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(
-                    onClick = { /* Logout logic */ },
+                    onClick = onLogout,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),

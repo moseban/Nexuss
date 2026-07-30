@@ -44,7 +44,7 @@ fun NexusBottomBar(navController: NavController) {
                         .clip(CircleShape)
                         .background(PrimaryGradient)
                         .clickable {
-
+                            navController.navigate(Screen.Scanner.route)
                         },
                     contentAlignment = Alignment.Center
                 ) {
