@@ -16,6 +16,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object Historial : Screen("historial", "Historial", Icons.Default.List)
     object ActionCenter : Screen("action_center", "", null) 
     object Scanner : Screen("scanner", "Scanner", null)
+    object DataPrivacy : Screen("data_privacy", "Privacidad de Datos", null)
     object Stats : Screen("stats", "Stats", Icons.Default.ShoppingCart)
     object Perfil : Screen("perfil", "Perfil", Icons.Default.Person)
 }

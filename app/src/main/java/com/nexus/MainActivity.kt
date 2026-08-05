@@ -27,6 +27,7 @@ import com.nexus.ui.auth.LoginScreen
 import com.nexus.ui.history.HistoryScreen
 import com.nexus.ui.stats.StatsScreen
 import com.nexus.ui.profile.ProfileScreen
+import com.nexus.ui.profile.DataPrivacyScreen
 import com.nexus.ui.scanner.ScannerScreen
 import com.nexus.ui.scanner.ScannerViewModel
 import com.nexus.viewmodel.MainViewModel
@@ -114,7 +115,17 @@ fun NexusAppShell() {
                             navController.navigate(Screen.Login.route) {
                                 popUpTo(0) { inclusive = true }
                             }
+                        },
+                        onNavigateToPrivacy = {
+                            navController.navigate(Screen.DataPrivacy.route)
                         }
+                    )
+                }
+
+                composable(Screen.DataPrivacy.route) {
+                    DataPrivacyScreen(
+                        viewModel = mainViewModel,
+                        onNavigateBack = { navController.popBackStack() }
                     )
                 }
 

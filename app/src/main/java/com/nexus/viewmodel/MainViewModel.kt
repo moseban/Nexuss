@@ -70,6 +70,10 @@ class MainViewModel @Inject constructor() : ViewModel() {
     fun addTransaction(transaction: Transaction) {
         repository.addTransaction(transaction)
     }
+
+    fun deleteAllTransactions() {
+        repository.deleteAllTransactions()
+    }
     private fun loadCategoryStats() {
         viewModelScope.launch {
             repository.transactions.collect {

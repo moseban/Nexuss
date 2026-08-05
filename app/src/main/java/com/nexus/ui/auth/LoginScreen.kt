@@ -26,8 +26,8 @@ import com.nexus.ui.theme.*
 fun LoginScreen(
     onLoginSuccess: () -> Unit
 ) {
-    var email by remember { mutableStateOf("user@gemini.ai") }
-    var password by remember { mutableStateOf("password") }
+    var email by remember { mutableStateOf("usuario@gmail.com") }
+    var password by remember { mutableStateOf("Contraseña") }
     var rememberMe by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -79,7 +79,7 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Powered by Gemini 2.5 flash",
+                    text = "Creado por Team Nexus",
                     color = TextSecondary,
                     fontSize = 14.sp
                 )

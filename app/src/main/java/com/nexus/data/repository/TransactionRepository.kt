@@ -16,6 +16,10 @@ class TransactionRepository {
         _transactions.value = _transactions.value + transaction
     }
 
+    fun deleteAllTransactions() {
+        _transactions.value = emptyList()
+    }
+
     fun getBalance(): Double {
         return _transactions.value.sumOf { it.amount }
     }

@@ -30,7 +30,8 @@ import com.nexus.ui.theme.*
 
 @Composable
 fun ProfileScreen(
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onNavigateToPrivacy: () -> Unit
 ) {
     Scaffold(
         containerColor = BackgroundDark
@@ -99,7 +100,8 @@ fun ProfileScreen(
                     NavigationItem(
                         icon = Icons.Outlined.Lock,
                         title = "Privacidad de Datos",
-                        iconColor = Color(0xFF3498DB)
+                        iconColor = Color(0xFF3498DB),
+                        onClick = onNavigateToPrivacy
                     )
                 }
             }
@@ -180,7 +182,7 @@ fun UserCard() {
 
             Column {
                 Text(
-                    text = "Usuario Gemini",
+                    text = "Usuario",
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
@@ -289,12 +291,13 @@ fun SwitchItem(
 fun NavigationItem(
     icon: ImageVector,
     title: String,
-    iconColor: Color = Color.White
+    iconColor: Color = Color.White,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
